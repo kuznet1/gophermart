@@ -12,7 +12,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kuznet1/gophermart/internal/config"
 	"github.com/kuznet1/gophermart/internal/errs"
-	. "github.com/kuznet1/gophermart/internal/logger"
+	"github.com/kuznet1/gophermart/internal/logger"
 	"github.com/kuznet1/gophermart/internal/model"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -42,8 +42,8 @@ func (r *Repo) Register(user model.UserCredentials) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	var userId int
-	err = r.db.QueryRow("INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id", user.Login, passwordHash).Scan(&userId)
+	var userID int
+	err = r.db.QueryRow("INSERT INTO users (login, password) VALUES ($1, $2) RETURNING id", user.Login, passwordHash).Scan(&userID)
 	var e *pgconn.PgError
 	if errors.As(err, &e) && e.Code == pgerrcode.UniqueViolation {
 		return 0, errs.ErrUserExists
@@ -51,20 +51,20 @@ func (r *Repo) Register(user model.UserCredentials) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return userId, nil
+	return userID, nil
 }
 
 func (r *Repo) Login(user model.UserCredentials) (int, error) {
-	var userId int
+	var userID int
 	var passHash string
 	row := r.db.QueryRow("SELECT id, password  FROM users WHERE login = $1", user.Login)
-	if err := row.Scan(&userId, &passHash); err != nil {
+	if err := row.Scan(&userID, &passHash); err != nil {
 		return 0, errs.ErrUserCredentials
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(passHash), []byte(user.Password)); err != nil {
 		return 0, errs.ErrUserCredentials
 	}
-	return userId, nil
+	return userID, nil
 }
 
 func (r *Repo) AddOrder(userID int, orderNum int) error {
@@ -200,7 +200,7 @@ func (r *Repo) UpdateAccrual(accrual model.AccrualResp) error {
 }
 
 func (r *Repo) GetProcessingOrders() ([]int, error) {
-	query := "SELECT order_id FROM orders WHERE status IN ('REGISTERED', 'PROCESSING')"
+	query := "SELECT order_id FROM orders WHERE status IN ('NEW', 'PROCESSING')"
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -243,7 +243,7 @@ func (r *Repo) doGetBalance(tx *sql.Tx, userID int) (model.Balance, error) {
 }
 
 func applyMigrations(db *sql.DB, path string) error {
-	Log.Info("Applying migrations...")
+	logger.Log.Info("Applying migrations...")
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to init driver: %w", err)
@@ -257,10 +257,10 @@ func applyMigrations(db *sql.DB, path string) error {
 	err = m.Up()
 	switch err {
 	case nil:
-		Log.Info("Migrations applied successfully.")
+		logger.Log.Info("Migrations applied successfully.")
 		return nil
 	case migrate.ErrNoChange:
-		Log.Info("Database is up to date.")
+		logger.Log.Info("Database is up to date.")
 		return nil
 	default:
 		return fmt.Errorf("migration failed: %v", err)

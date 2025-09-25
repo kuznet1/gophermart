@@ -5,14 +5,14 @@ CREATE TABLE IF NOT EXISTS users
     password TEXT NOT NULL
 );
 
-CREATE TYPE status AS ENUM ('REGISTERED', 'INVALID', 'PROCESSING', 'PROCESSED');
+CREATE TYPE status AS ENUM ('NEW', 'PROCESSING', 'INVALID', 'PROCESSED');
 
 CREATE TABLE IF NOT EXISTS orders
 (
     id          SERIAL PRIMARY KEY,
     order_id    BIGINT    NOT NULL UNIQUE,
     user_id     INTEGER   NOT NULL,
-    status      status    NOT NULL DEFAULT 'REGISTERED',
+    status      status    NOT NULL DEFAULT 'NEW',
     accrual     numeric(8, 2)      DEFAULT 0,
     uploaded_at TIMESTAMP NOT NULL DEFAULT now(),
     FOREIGN KEY (user_id) REFERENCES users (id)

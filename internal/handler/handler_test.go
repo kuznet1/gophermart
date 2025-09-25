@@ -48,6 +48,7 @@ func TestFlow(t *testing.T) {
 		b, _ := json.Marshal(cred)
 		resp, err := http.Post(ts.URL+"/api/user/register", "application/json", bytes.NewBuffer(b))
 		require.NoError(t, err)
+		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		cookies = resp.Cookies()
 	})
@@ -57,6 +58,7 @@ func TestFlow(t *testing.T) {
 		b, _ := json.Marshal(cred)
 		resp, err := http.Post(ts.URL+"/api/user/login", "application/json", bytes.NewBuffer(b))
 		require.NoError(t, err)
+		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		cookies = resp.Cookies()
 	})
@@ -68,6 +70,7 @@ func TestFlow(t *testing.T) {
 		}
 		resp, err := client.Do(req)
 		require.NoError(t, err)
+		defer resp.Body.Close()
 		require.Equal(t, http.StatusAccepted, resp.StatusCode)
 	})
 
@@ -116,6 +119,7 @@ func TestFlow(t *testing.T) {
 		}
 		resp, err := client.Do(req)
 		require.NoError(t, err)
+		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 

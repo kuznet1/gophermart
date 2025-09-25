@@ -21,7 +21,7 @@ func NewService(repo *repository.Repo, auth *middleware.Auth, accrual accrual.Ac
 }
 
 func (s *Service) NewOrder(ctx context.Context, orderID int) error {
-	userID, err := s.auth.GetUserId(ctx)
+	userID, err := s.auth.GetUserID(ctx)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (s *Service) NewOrder(ctx context.Context, orderID int) error {
 }
 
 func (s *Service) GetOrders(ctx context.Context) ([]model.Order, error) {
-	userID, err := s.auth.GetUserId(ctx)
+	userID, err := s.auth.GetUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (s *Service) GetOrders(ctx context.Context) ([]model.Order, error) {
 }
 
 func (s *Service) GetBalance(ctx context.Context) (model.Balance, error) {
-	userID, err := s.auth.GetUserId(ctx)
+	userID, err := s.auth.GetUserID(ctx)
 	if err != nil {
 		return model.Balance{}, err
 	}
@@ -54,7 +54,7 @@ func (s *Service) GetBalance(ctx context.Context) (model.Balance, error) {
 }
 
 func (s *Service) Withdraw(ctx context.Context, withdraw model.Withdraw) error {
-	userID, err := s.auth.GetUserId(ctx)
+	userID, err := s.auth.GetUserID(ctx)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (s *Service) Withdraw(ctx context.Context, withdraw model.Withdraw) error {
 }
 
 func (s *Service) GetWithdrawals(ctx context.Context) ([]model.Withdrawal, error) {
-	userID, err := s.auth.GetUserId(ctx)
+	userID, err := s.auth.GetUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,19 +76,19 @@ func (s *Service) GetWithdrawals(ctx context.Context) ([]model.Withdrawal, error
 }
 
 func (s *Service) Login(creds model.UserCredentials) (string, error) {
-	userId, err := s.repo.Login(creds)
+	userID, err := s.repo.Login(creds)
 	if err != nil {
 		return "", err
 	}
 
-	return s.auth.CreateToken(userId)
+	return s.auth.CreateToken(userID)
 }
 
 func (s *Service) Register(creds model.UserCredentials) (string, error) {
-	userId, err := s.repo.Register(creds)
+	userID, err := s.repo.Register(creds)
 	if err != nil {
 		return "", err
 	}
 
-	return s.auth.CreateToken(userId)
+	return s.auth.CreateToken(userID)
 }

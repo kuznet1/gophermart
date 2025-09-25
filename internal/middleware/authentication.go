@@ -70,7 +70,7 @@ func (auth *Auth) CreateToken(userID int) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims{UserID: userID}).SignedString([]byte(auth.cfg.SecretKey))
 }
 
-func (auth *Auth) GetUserId(ctx context.Context) (int, error) {
+func (auth *Auth) GetUserID(ctx context.Context) (int, error) {
 	val := ctx.Value(UserIDKey)
 	id, ok := val.(int)
 	if !ok {

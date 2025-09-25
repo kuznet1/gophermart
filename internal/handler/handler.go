@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/kuznet1/gophermart/internal/errs"
-	. "github.com/kuznet1/gophermart/internal/logger"
+	"github.com/kuznet1/gophermart/internal/logger"
 	"github.com/kuznet1/gophermart/internal/middleware"
 	"github.com/kuznet1/gophermart/internal/model"
 	"github.com/kuznet1/gophermart/internal/service"
@@ -189,7 +189,7 @@ func (h *Handler) GetWithdrawals(w http.ResponseWriter, r *http.Request) {
 }
 
 func internalError(err error, w http.ResponseWriter) {
-	Log.Error(err.Error(), zap.Error(err))
+	logger.Log.Error(err.Error(), zap.Error(err))
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
