@@ -152,11 +152,12 @@ func newMux() (*chi.Mux, error) {
 		MigrationsPath:       "file://../../migrations",
 	}
 
-	repo, err := repository.NewRepo(cfg)
+	db, err := repository.InitDBConnection(cfg)
 	if err != nil {
 		return nil, err
 	}
 
+	repo := repository.NewRepo(db)
 	accrualClient := &accrualMock{repo: repo}
 	auth := middleware.NewAuth(cfg)
 	svc := service.NewService(repo, auth, accrualClient)

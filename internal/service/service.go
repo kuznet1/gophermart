@@ -8,6 +8,7 @@ import (
 	"github.com/kuznet1/gophermart/internal/model"
 	"github.com/kuznet1/gophermart/internal/repository"
 	"github.com/theplant/luhn"
+	"strconv"
 )
 
 type Service struct {
@@ -20,10 +21,15 @@ func NewService(repo *repository.Repo, auth *middleware.Auth, accrual accrual.Ac
 	return &Service{repo, auth, accrual}
 }
 
-func (s *Service) NewOrder(ctx context.Context, orderID int) error {
+func (s *Service) NewOrder(ctx context.Context, order string) error {
 	userID, err := s.auth.GetUserID(ctx)
 	if err != nil {
 		return err
+	}
+
+	orderID, err := strconv.Atoi(order)
+	if err != nil {
+		return errs.ErrInvalidOrderNum
 	}
 
 	if !luhn.Valid(orderID) {

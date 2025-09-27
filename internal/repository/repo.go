@@ -3,42 +3,29 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"fmt"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/kuznet1/gophermart/internal/config"
 	"github.com/kuznet1/gophermart/internal/errs"
-	"github.com/kuznet1/gophermart/internal/logger"
 	"github.com/kuznet1/gophermart/internal/model"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var bcryptCost = 14
 
 type Repo struct {
 	db *sql.DB
 }
 
-func NewRepo(cfg config.Config) (*Repo, error) {
-	db, err := sql.Open("pgx", cfg.DatabaseURI)
-	if err != nil {
-		return nil, fmt.Errorf("unable to open sql connection: %w", err)
-	}
-
-	err = applyMigrations(db, cfg.MigrationsPath)
-	if err != nil {
-		return nil, err
-	}
-
+func NewRepo(db *sql.DB) *Repo {
 	return &Repo{
 		db: db,
-	}, nil
+	}
 }
 
 func (r *Repo) Register(user model.UserCredentials) (int, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcryptCost)
 	if err != nil {
 		return 0, err
 	}
@@ -240,29 +227,4 @@ func (r *Repo) doGetBalance(tx *sql.Tx, userID int) (model.Balance, error) {
 		Current:   sumAccruals - sumWithdrawals,
 		Withdrawn: sumWithdrawals,
 	}, nil
-}
-
-func applyMigrations(db *sql.DB, path string) error {
-	logger.Log.Info("Applying migrations...")
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		return fmt.Errorf("failed to init driver: %w", err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(path, "postgres", driver)
-	if err != nil {
-		return fmt.Errorf("failed to init migrate: %w", err)
-	}
-
-	err = m.Up()
-	switch err {
-	case nil:
-		logger.Log.Info("Migrations applied successfully.")
-		return nil
-	case migrate.ErrNoChange:
-		logger.Log.Info("Database is up to date.")
-		return nil
-	default:
-		return fmt.Errorf("migration failed: %v", err)
-	}
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"github.com/caarlos0/env/v6"
 )
@@ -21,6 +22,13 @@ func NewConfig() (Config, error) {
 	flag.StringVar(&cfg.MigrationsPath, "m", "file://migrations", "Migrations path")
 	flag.StringVar(&cfg.SecretKey, "k", "", "secret key for cookie signing")
 	flag.Parse()
-	return cfg, env.Parse(&cfg)
+	err := env.Parse(&cfg)
+	if err != nil {
+		return Config{}, err
+	}
+	if cfg.SecretKey == "" {
+		return Config{}, errors.New("secret key is empty")
+	}
+	return cfg, err
 
 }

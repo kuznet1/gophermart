@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"net/http"
-	"strconv"
 )
 
 type Handler struct {
@@ -105,13 +104,7 @@ func (h *Handler) NewOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	order := string(body)
 
-	orderNum, err := strconv.Atoi(order)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.svc.NewOrder(r.Context(), orderNum)
+	err = h.svc.NewOrder(r.Context(), order)
 	var httpErr *errs.HTTPError
 	if errors.As(err, &httpErr) {
 		http.Error(w, httpErr.Error(), httpErr.Code())

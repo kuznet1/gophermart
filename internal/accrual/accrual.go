@@ -20,15 +20,20 @@ type Accrual struct {
 }
 
 func NewAccrual(accrualSystemAddress string, repo *repository.Repo) *Accrual {
-	acc := &Accrual{
+	return &Accrual{
 		signal:               make(chan struct{}, 1),
 		accrualSystemAddress: accrualSystemAddress,
 		repo:                 repo,
 	}
+}
 
-	go acc.run()
-	acc.Signal()
-	return acc
+func (a *Accrual) Start() {
+	go a.run()
+	a.Signal()
+}
+
+func (a *Accrual) Stop() {
+	close(a.signal)
 }
 
 func (a *Accrual) run() {

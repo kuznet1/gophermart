@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"github.com/kuznet1/gophermart/internal/accrual"
 	"github.com/kuznet1/gophermart/internal/config"
 	"github.com/kuznet1/gophermart/internal/handler"
@@ -18,11 +19,19 @@ func main() {
 		logger.Log.Fatal("unable to parse config", zap.Error(err))
 	}
 
-	repo, err := repository.NewRepo(cfg)
+	db, err := repository.InitDBConnection(cfg)
 	if err != nil {
-		logger.Log.Fatal("unable to create database storage", zap.Error(err))
+		logger.Log.Fatal("failed to init sql connection", zap.Error(err))
 	}
+
+	startService(db, cfg)
+}
+
+func startService(db *sql.DB, cfg config.Config) {
+	repo := repository.NewRepo(db)
 	acc := accrual.NewAccrual(cfg.AccrualSystemAddress, repo)
+	acc.Start()
+	defer acc.Stop()
 	auth := middleware.NewAuth(cfg)
 	svc := service.NewService(repo, auth, acc)
 	h := handler.NewHandler(svc, auth)
