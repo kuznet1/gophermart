@@ -134,7 +134,6 @@ func TestFlow(t *testing.T) {
 
 		defer resp.Body.Close()
 		body, _ := io.ReadAll(resp.Body)
-		t.Logf("withdrawals: %s", body)
 
 		var withdrawals []model.Withdrawal
 		err = json.Unmarshal(body, &withdrawals)

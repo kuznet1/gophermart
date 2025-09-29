@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var bcryptCost = 14
+const bcryptCost = 14
 
 type Repo struct {
 	db *sql.DB

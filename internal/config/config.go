@@ -1,9 +1,9 @@
 package config
 
 import (
-	"errors"
 	"flag"
 	"github.com/caarlos0/env/v6"
+	"github.com/kuznet1/gophermart/internal/logger"
 )
 
 type Config struct {
@@ -27,8 +27,8 @@ func NewConfig() (Config, error) {
 		return Config{}, err
 	}
 	if cfg.SecretKey == "" {
-		return Config{}, errors.New("secret key is empty")
+		logger.Log.Warn("secret key is empty")
 	}
-	return cfg, err
+	return cfg, nil
 
 }
